@@ -1,7 +1,6 @@
-﻿const db = require('../config/db');
+const db = require('../config/db');
 const bcrypt = require('bcryptjs');
-const path = require('path');
-const fs = require('fs');
+const { cloudinary, isConfigured } = require('../config/cloudinary');
 
 const validatePassword = (pw) => /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/.test(pw);
 
@@ -63,27 +62,40 @@ exports.updateProfileImage = async (req, res) => {
   if (!req.file)
     return res.status(400).json({ message: '프로필 사진 파일을 선택해주세요.' });
 
-  const uploadedPath = path.join(__dirname, '../uploads/profiles', req.file.filename);
-
   try {
-    const [rows] = await db.query(
-      'SELECT profile_image FROM users WHERE id = ?', [req.user.id]
-    );
-    const oldImage = rows[0]?.profile_image;
-    const imagePath = `/uploads/profiles/${req.file.filename}`;
-
-    await db.query(
-      'UPDATE users SET profile_image = ? WHERE id = ?', [imagePath, req.user.id]
-    );
-
-    if (oldImage) {
-      const oldFilePath = path.join(__dirname, '..', oldImage);
-      if (fs.existsSync(oldFilePath)) fs.unlinkSync(oldFilePath);
+    if (!isConfigured) {
+      return res.status(500).json({
+        message: 'Cloudinary 설정이 필요합니다. 환경변수를 확인해주세요.',
+      });
     }
 
-    res.json({ message: '프로필 사진이 변경되었습니다.', profile_image: imagePath });
+    // Upload buffer to Cloudinary and store the resulting secure URL.
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'mypetlog/profiles',
+          resource_type: 'image',
+          // Overwrite to avoid unbounded versions per user.
+          public_id: `user-${req.user.id}`,
+          overwrite: true,
+        },
+        (err, uploaded) => {
+          if (err) return reject(err);
+          resolve(uploaded);
+        }
+      );
+      stream.end(req.file.buffer);
+    });
+
+    const imageUrl = result.secure_url;
+
+    await db.query('UPDATE users SET profile_image = ? WHERE id = ?', [
+      imageUrl,
+      req.user.id,
+    ]);
+
+    res.json({ message: '프로필 사진이 변경되었습니다.', profile_image: imageUrl });
   } catch (err) {
-    if (fs.existsSync(uploadedPath)) fs.unlinkSync(uploadedPath);
     res.status(500).json({ message: '서버 오류', error: err.message });
   }
 };

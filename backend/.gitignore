@@ -1,0 +1,7 @@
+node_modules/
+.env
+uploads/profiles/*.jpg
+uploads/profiles/*.png
+uploads/profiles/*.jpeg
+uploads/profiles/*.gif
+uploads/profiles/*.webp

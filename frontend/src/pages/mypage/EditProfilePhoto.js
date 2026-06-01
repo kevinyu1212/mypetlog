@@ -13,9 +13,13 @@ export default function EditProfilePhoto() {
   const [success, setSuccess] = useState('');
   const [uploading, setUploading] = useState(false);
 
-  const currentImage = user?.profile_image
-    ? `${SERVER_URL}${user.profile_image}`
-    : null;
+  const getImageSrc = (img) => {
+    if (!img) return null;
+    if (img.startsWith('http')) return img;
+    return `${SERVER_URL}${img}`;
+  };
+
+  const currentImage = getImageSrc(user?.profile_image);
 
   const handleFileChange = (e) => {
     const selected = e.target.files[0];

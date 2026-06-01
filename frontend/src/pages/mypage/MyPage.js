@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios, { SERVER_URL } from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
@@ -8,6 +8,13 @@ export default function MyPage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const getImageSrc = (img) => {
+    if (!img) return null;
+    // Cloudinary returns absolute URL. Legacy/local keeps it as a relative path.
+    if (img.startsWith('http')) return img;
+    return `${SERVER_URL}${img}`;
+  };
 
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
@@ -41,7 +48,7 @@ export default function MyPage() {
             <div className='w-full h-full rounded-full bg-emerald-600 flex items-center justify-center text-3xl overflow-hidden'>
               {profile.profile_image ? (
                 <img
-                  src={`${SERVER_URL}${profile.profile_image}`}
+                  src={getImageSrc(profile.profile_image)}
                   alt='프로필'
                   className='w-full h-full object-cover'
                 />
