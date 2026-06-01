@@ -1,24 +1,19 @@
-# Dependencies
+﻿# 의존성
 node_modules/
+backend/node_modules/
+frontend/node_modules/
 
-# Environment (secrets)
+# 환경변수
 .env
-.env.local
-.env.*.local
+backend/.env
 
-# Uploads (local legacy)
-backend/uploads/profiles/*
-!backend/uploads/profiles/.gitkeep
-
-# Build
+# 빌드
 frontend/build/
 
-# OS / IDE
+# 업로드
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# 기타
 .DS_Store
 Thumbs.db
-.idea/
-.vscode/
-
-# Logs
-*.log
-npm-debug.log*
