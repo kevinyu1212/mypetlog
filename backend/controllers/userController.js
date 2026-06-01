@@ -1,8 +1,9 @@
 ﻿const db = require('../config/db');
 const bcrypt = require('bcryptjs');
+const path = require('path');
+const fs = require('fs');
 
 const validatePassword = (pw) => /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/.test(pw);
-const validateBirthdate = (date) => /^\d{4}-\d{2}-\d{2}$/.test(date);
 
 // 마이페이지 조회
 exports.getProfile = async (req, res) => {
@@ -57,16 +58,32 @@ exports.updateNickname = async (req, res) => {
   }
 };
 
-// 생년월일 변경
-exports.updateBirthdate = async (req, res) => {
-  const { birthdate } = req.body;
-  if (!birthdate || !validateBirthdate(birthdate))
-    return res.status(400).json({ message: '생년월일 형식이 올바르지 않습니다. (YYYY-MM-DD)' });
+// 프로필 사진 등록/변경
+exports.updateProfileImage = async (req, res) => {
+  if (!req.file)
+    return res.status(400).json({ message: '프로필 사진 파일을 선택해주세요.' });
+
+  const uploadedPath = path.join(__dirname, '../uploads/profiles', req.file.filename);
 
   try {
-    await db.query('UPDATE users SET birthdate = ? WHERE id = ?', [birthdate, req.user.id]);
-    res.json({ message: '생년월일이 변경되었습니다.', birthdate });
+    const [rows] = await db.query(
+      'SELECT profile_image FROM users WHERE id = ?', [req.user.id]
+    );
+    const oldImage = rows[0]?.profile_image;
+    const imagePath = `/uploads/profiles/${req.file.filename}`;
+
+    await db.query(
+      'UPDATE users SET profile_image = ? WHERE id = ?', [imagePath, req.user.id]
+    );
+
+    if (oldImage) {
+      const oldFilePath = path.join(__dirname, '..', oldImage);
+      if (fs.existsSync(oldFilePath)) fs.unlinkSync(oldFilePath);
+    }
+
+    res.json({ message: '프로필 사진이 변경되었습니다.', profile_image: imagePath });
   } catch (err) {
+    if (fs.existsSync(uploadedPath)) fs.unlinkSync(uploadedPath);
     res.status(500).json({ message: '서버 오류', error: err.message });
   }
 };
