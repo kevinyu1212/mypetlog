@@ -8,3 +8,11 @@ export const fetchAdminLogs = async () => {
     });
     return response.data;
 };
+
+export const updateReportStatus = async (reportId, reportData) => {
+    const token = localStorage.getItem('token');
+    const response = await axios.put(`${API_URL}/admin/reports/${reportId}`, reportData, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+};

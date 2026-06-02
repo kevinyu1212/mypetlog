@@ -49,3 +49,52 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+export const AdminReportManagement = () => {
+    const [reports, setReports] = useState([
+        // 초기 렌더링 검증용 가상 혹은 API 바인딩용 스켈레톤 구조
+        { id: 1, reporter_name: '테스트집사', post_id: 7, reason: '음란성 광고 게시글', status: 'pending' }
+    ]);
+
+    const handleAction = async (reportId, postId, type) => {
+        const confirmCheck = window.confirm(`해당 신고 건에 대해 [${type}] 처리를 진행하시겠습니까?`);
+        if (!confirmCheck) return;
+
+        try {
+            const payload = type === 'RESOLVE_BLIND' 
+                ? { status: 'resolved', actionType: 'BLIND', postId } 
+                : { status: 'rejected', actionType: 'NONE', postId: null };
+
+            const res = await updateReportStatus(reportId, payload);
+            if (res.success) {
+                alert('제재 처분이 완료되었습니다.');
+                setReports(prev => prev.map(r => r.id === reportId ? { ...r, status: type === 'RESOLVE_BLIND' ? 'resolved' : 'rejected' } : r));
+            }
+        } catch (err) {
+            console.error('처분 처리 실패:', err);
+            alert('권한이 없거나 처리 중 오류가 발생했습니다.');
+        }
+    };
+
+    return (
+        <div style={{ padding: '20px', background: '#fff', borderRadius: '8px', marginTop: '30px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+            <h3>🚨 실시간 접수된 유저 신고 내역 제어판</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px' }}>
+                {reports.map(rep => (
+                    <div key={rep.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid #eee', borderRadius: '6px' }}>
+                        <div>
+                            <strong>신고 고유번호: #{rep.id}</strong> | 피신고 대상 글 번호: <span style={{ color: '#096dd9' }}>#{rep.post_id}</span>
+                            <div style={{ color: '#666', marginTop: '5px' }}>사유: {rep.reason} [상태: <span style={{ fontWeight: 'bold' }}>{rep.status}</span>]</div>
+                        </div>
+                        {rep.status === 'pending' && (
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button onClick={() => handleAction(rep.id, rep.post_id, 'RESOLVE_BLIND')} style={{ background: '#ff4d4f', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>승인 & 블라인드</button>
+                                <button onClick={() => handleAction(rep.id, rep.post_id, 'REJECT')} style={{ background: '#f5f5f5', color: '#333', border: '1px solid #ccc', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>신고 기각</button>
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
