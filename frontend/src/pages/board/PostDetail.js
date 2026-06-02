@@ -213,3 +213,91 @@ export default function PostDetail() {
   );
 }
 
+
+
+import React, { useState } from 'react';
+import { submitReport } from '../../services/reportService';
+
+/* 게시글 상세 내 신고 모달 및 버튼 컴포넌트 주입 */
+export const ReportSection = ({ postId, commentId = null }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [reason, setReason] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleReportSubmit = async (e) => {
+        e.preventDefault();
+        if (!reason.trim()) {
+            alert('신고 사유를 선택하거나 입력해주세요.');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const result = await submitReport({
+                post_id: postId,
+                comment_id: commentId,
+                reason: reason
+            });
+            if (result.success) {
+                alert('신고가 정상적으로 접수되었습니다.');
+                setIsOpen(false);
+                setReason('');
+            }
+        } catch (error) {
+            console.error('신고 실패:', error);
+            alert(error.response?.data?.message || '신고 처리 중 오류가 발생했습니다.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="report-container" style={{ display: 'inline-block', marginLeft: '10px' }}>
+            <button 
+                onClick={() => setIsOpen(true)} 
+                className="btn-report"
+                style={{ backgroundColor: '#ff4d4f', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
+            >
+                신고하기
+            </button>
+
+            {isOpen && (
+                <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div className="modal-content" style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '320px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                        <h3 style={{ marginTop: 0 }}>게시글 신고</h3>
+                        <form onSubmit={handleReportSubmit}>
+                            <select 
+                                value={reason} 
+                                onChange={(e) => setReason(e.target.value)}
+                                style={{ width: '100%', padding: '8px', marginBottom: '15px', borderRadius: '4px', border: '1px solid #ccc' }}
+                            >
+                                <option value="">-- 사유 선택 --</option>
+                                <option value="SPAM">스팸 / 홍보성 글</option>
+                                <option value="ABUSE">욕설 및 비방</option>
+                                <option value="INAPPROPRIATE">음란물 / 유해한 콘텐츠</option>
+                                <option value="ETC">기타 사유</option>
+                            </select>
+                            
+                            {reason === 'ETC' && (
+                                <input 
+                                    type="text" 
+                                    placeholder="상세 사유를 입력하세요." 
+                                    onChange={(e) => setReason(e.target.value)}
+                                    style={{ width: '100%', padding: '8px', marginBottom: '15px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+                                    required
+                                />
+                            )}
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                                <button type="button" onClick={() => setIsOpen(false)} style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid #ccc', background: '#fff', cursor: 'pointer' }}>취소</button>
+                                <button type="submit" disabled={isSubmitting} style={{ padding: '6px 12px', borderRadius: '4px', border: 'none', background: '#ff4d4f', color: '#fff', cursor: 'pointer' }}>
+                                    {isSubmitting ? '제출 중...' : '신고 제출'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
