@@ -1,4 +1,5 @@
-﻿import { useState } from 'react';
+﻿import ProtectedRoute from '../../components/ProtectedRoute';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from '../../api/axios';
 
@@ -28,6 +29,7 @@ export default function EditPassword() {
   const inputClass = 'w-full px-4 py-2 rounded-lg border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-400 text-sm';
 
   return (
+    <ProtectedRoute>
     <div className='min-h-screen bg-gray-900 flex items-center justify-center px-4'>
       <div className='w-full max-w-sm bg-gray-800 rounded-2xl p-8'>
         <div className='flex items-center mb-6'>
@@ -49,3 +51,4 @@ export default function EditPassword() {
     </div>
   );
 }
+

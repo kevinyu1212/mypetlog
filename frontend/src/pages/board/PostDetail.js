@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from '../../api/axios';
 import Layout from '../../components/Layout';
@@ -21,7 +21,11 @@ export default function PostDetail() {
   const [editCommentId, setEditCommentId] = useState(null);
   const [editCommentText, setEditCommentText] = useState('');
 
-  const fetchPost = () => axios.get(`/posts/${postId}`).then(res => setPost(res.data.post));
+  const fetchPost = () =>
+    axios.get(/posts/${postId}).then(res => {
+      setPost(res.data.post);
+      setLiked(res.data.post.is_liked ?? false);
+    });
   const fetchComments = () => axios.get(`/posts/${postId}/comments`).then(res => setComments(res.data.comments));
 
   useEffect(() => {
@@ -208,3 +212,4 @@ export default function PostDetail() {
     </Layout>
   );
 }
+

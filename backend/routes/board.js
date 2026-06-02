@@ -1,7 +1,8 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 
 const auth = require('../middleware/auth');
+const optionalAuth = require('../middleware/optionalAuth');
 const upload = require('../middleware/upload');
 
 const { getCategories } = require('../controllers/categoriesController');
@@ -34,7 +35,7 @@ const handleUpload = (req, res, next) => {
 // 2) Posts (list/create/detail/update/delete)
 router.get('/posts', getPosts);
 router.post('/posts', auth, handleUpload, createPost);
-router.get('/posts/:postId', getPostById);
+router.get('/posts/:postId', optionalAuth, getPostById);
 router.patch('/posts/:postId', auth, handleUpload, updatePost);
 router.delete('/posts/:postId', auth, deletePost);
 
@@ -52,4 +53,5 @@ router.delete('/posts/:postId/like', auth, unlikePost);
 router.get('/hashtags', getHashtags);
 
 module.exports = router;
+
 

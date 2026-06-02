@@ -1,4 +1,4 @@
-const db = require('../config/db');
+﻿const db = require('../config/db');
 const { cloudinary, isConfigured } = require('../config/cloudinary');
 
 const CATEGORY_TO_ENUM = {
@@ -161,12 +161,22 @@ exports.getPostById = async (req, res) => {
     );
     const tagList = await getPostHashtags(postId);
 
+    let is_liked = false;
+    if (req.user?.id) {
+      const [likeRows] = await db.query(
+        'SELECT 1 FROM likes WHERE post_id = ? AND user_id = ?',
+        [postId, req.user.id]
+      );
+      is_liked = likeRows.length > 0;
+    }
+
     res.json({
       post: {
         ...rows[0],
         category_name: ENUM_TO_CATEGORY[rows[0].category] || rows[0].category,
         images: imgRows.map((r) => r.image_url),
         hashtag_list: tagList,
+        is_liked,
       },
     });
   } catch (err) {
@@ -281,3 +291,4 @@ exports.deletePost = async (req, res) => {
     res.status(500).json({ message: '서버 오류', error: err.message });
   }
 };
+

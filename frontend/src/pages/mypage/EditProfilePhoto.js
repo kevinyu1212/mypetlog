@@ -1,3 +1,4 @@
+﻿import ProtectedRoute from '../../components/ProtectedRoute';
 import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios, { SERVER_URL } from '../../api/axios';
@@ -64,6 +65,7 @@ export default function EditProfilePhoto() {
   };
 
   return (
+    <ProtectedRoute>
     <div className='min-h-screen bg-gray-900 flex items-center justify-center px-4'>
       <div className='w-full max-w-sm bg-gray-800 rounded-2xl p-8'>
         <div className='flex items-center mb-6'>
@@ -116,3 +118,4 @@ export default function EditProfilePhoto() {
     </div>
   );
 }
+
