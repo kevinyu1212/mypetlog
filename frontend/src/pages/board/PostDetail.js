@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
+import { submitReport } from '../../services/reportService';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from '../../api/axios';
 import Layout from '../../components/Layout';
@@ -215,7 +216,6 @@ export default function PostDetail() {
 
 
 
-import { submitReport } from '../../services/reportService';
 
 /* 게시글 상세 내 신고 모달 및 버튼 컴포넌트 주입 */
 export const ReportSection = ({ postId, commentId = null }) => {
