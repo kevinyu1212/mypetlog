@@ -22,7 +22,7 @@ export default function PostDetail() {
   const [editCommentText, setEditCommentText] = useState('');
 
   const fetchPost = () =>
-    axios.get(/posts/${postId}).then(res => {
+    axios.get(`/posts/${postId}`).then(res => {
       setPost(res.data.post);
       setLiked(res.data.post.is_liked ?? false);
     });
@@ -301,3 +301,4 @@ export const ReportSection = ({ postId, commentId = null }) => {
         </div>
     );
 };
+

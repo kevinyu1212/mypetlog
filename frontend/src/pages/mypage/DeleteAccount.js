@@ -1,47 +1,45 @@
-﻿import ProtectedRoute from '../../components/ProtectedRoute';
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from '../../api/axios';
-import { useAuth } from '../../context/AuthContext';
+﻿import React, { useState } from 'react';
+import axios from 'axios';
 
-export default function DeleteAccount() {
-  const navigate = useNavigate();
-  const { logout } = useAuth();
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+function DeleteAccount() {
+  const [confirmText, setConfirmText] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault(); setError('');
-    if (!window.confirm('정말로 탈퇴하시겠습니까? 모든 데이터가 삭제됩니다.')) return;
-    try {
-      await axios.delete('/user/account', { data: { password } });
-      logout();
-      alert('회원 탈퇴가 완료되었습니다.');
-      navigate('/login');
-    } catch (err) {
-      setError(err.response?.data?.message || '탈퇴 실패');
+  const handleDelete = (e) => {
+    e.preventDefault();
+    if (confirmText !== '탈퇴회원') {
+      alert('확인 문구가 올바르지 않습니다.');
+      return;
     }
+    const token = localStorage.getItem('token');
+    axios.delete('http://localhost:5000/api/users/account', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(() => {
+      alert('회원 탈퇴가 완료되었습니다.');
+      localStorage.removeItem('token');
+      window.location.href = '/';
+    })
+    .catch(err => console.error(err));
   };
 
   return (
-    <ProtectedRoute>
-    <div className='min-h-screen bg-gray-900 flex items-center justify-center px-4'>
-      <div className='w-full max-w-sm bg-gray-800 rounded-2xl p-8'>
-        <div className='flex items-center mb-6'>
-          <Link to='/mypage' className='text-gray-400 hover:text-white mr-3'>←</Link>
-          <h2 className='text-xl font-bold text-red-400'>회원 탈퇴</h2>
-        </div>
-        <p className='text-gray-400 text-sm mb-6'>탈퇴 시 모든 게시글, 댓글, 좋아요 데이터가 삭제되며 복구가 불가능합니다.</p>
-        <form onSubmit={handleSubmit} className='space-y-4'>
-          <input type='password' placeholder='비밀번호 확인' value={password}
-            onChange={e => setPassword(e.target.value)}
-            className='w-full px-4 py-2 rounded-lg border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-red-400 text-sm' />
-          {error && <p className='text-red-400 text-xs'>{error}</p>}
-          <button type='submit'
-            className='w-full py-3 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold text-sm'>탈퇴하기</button>
+    <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
+      <h2>회원 탈퇴</h2>
+      <p style={{ color: 'red' }}>주의: 탈퇴 시 모든 데이터가 영구 삭제됩니다.</p>
+      <div style={{ marginTop: '20px' }}>
+        <form onSubmit={handleDelete}>
+          <input 
+            type="text" 
+            placeholder="'탈퇴회원'을 입력하세요" 
+            value={confirmText} 
+            onChange={(e) => setConfirmText(e.target.value)}
+            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+          />
+          <button type="submit" style={{ width: '100%', padding: '10px', background: '#ff4d4f', color: '#fff', border: 'none', borderRadius: '4px' }}>계정 삭제</button>
         </form>
       </div>
     </div>
   );
 }
 
+export default DeleteAccount;
