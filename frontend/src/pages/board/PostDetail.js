@@ -215,7 +215,6 @@ export default function PostDetail() {
 
 
 
-import React, { useState } from 'react';
 import { submitReport } from '../../services/reportService';
 
 /* 게시글 상세 내 신고 모달 및 버튼 컴포넌트 주입 */
